@@ -36,6 +36,6 @@ COPY --from=builder /workspace/grpc-health /bin/grpc-health
 COPY --from=builder /workspace/bin/service /bin/service
 # Content server from HTTP paths /docs and /proto
 COPY --from=builder /workspace/pb/service.proto /static/service.proto
-COPY --from=builder /workspace/doc/index.html /static/index.html
+COPY --from=builder /workspace/pb/index.html /static/index.html
 USER 1000
 ENTRYPOINT [ "/bin/service" ]
