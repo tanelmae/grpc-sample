@@ -1,0 +1,153 @@
+syntax = "proto3";
+
+package grpc.sample;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/tanelmae/grpc-sample/pb";
+
+message HealthCheckRequest {
+  string service = 1;
+}
+
+message HealthCheckResponse {
+  enum ServingStatus {
+    UNKNOWN = 0;
+    SERVING = 1;
+    NOT_SERVING = 2;
+    SERVICE_UNKNOWN = 3;  // Used only by the Watch method.
+  }
+  ServingStatus status = 1;
+}
+
+service HealthService {
+  rpc Check(HealthCheckRequest) returns (HealthCheckResponse);
+  rpc Watch(HealthCheckRequest) returns (stream HealthCheckResponse);
+}
+
+service TicketService {
+    /*
+    Aggregated category scores over a period of time
+    E.g. what have the daily ticket scores been for a past week or what were the scores between 1st and 31st of January.
+    For periods longer than one month weekly aggregates should be returned instead of daily values.
+    */
+    rpc CategoryScores(TimePeriod) returns (CategoryScoresOut);
+
+    /*
+    Scores by ticket
+    Aggregate scores for categories within defined period by ticket.
+    E.g. what aggregate category scores tickets have within defined rating time range have.
+    */
+    rpc TicketScores(TimePeriod) returns (TicketScoresOut);
+
+    /*
+    Overal quality score. What is the overall aggregate score for a period.
+    E.g. the overall score over past week has been 96%.
+    */
+    rpc OveralScore(TimePeriod) returns (OveralScoreOut);
+
+    /*
+    Period over Period score change. What has been the change from selected period over previous period.
+    E.g. current week vs. previous week or December vs. January change in percentages.
+    */
+    rpc PeriodOverPeriod(TimePeriods) returns (PeriodOverPeriodOut);
+  }
+
+message TimePeriods {
+  // First time period for comparison
+  TimePeriod first = 1;
+  // Second time period for comparison
+  TimePeriod second = 2;
+}
+
+message TimePeriod {
+  // Start time for the time period request
+  google.protobuf.Timestamp from = 1;
+  // End time for the time period request
+  google.protobuf.Timestamp to = 2;
+}
+
+message CategoryScoresOut {
+  // List of period score items
+  repeated PeriodScore scores = 1;
+  // Type for PeriodScore
+  enum Period {
+    DAY = 0; // Time period is day
+    WEEK = 1; // Time period is week
+  }
+  // Type for the period units
+  Period period = 2;
+  // Total scores by category
+  repeated CategoryCount counts = 3;
+}
+
+message CategoryCount {
+  // Category ID
+  // @inject_tag: db:"id"
+  int32 id = 1;
+  // Category name
+  // @inject_tag: db:"name"
+  string name = 2;
+  // Count of category ratings
+  // @inject_tag: db:"count"
+  int32 count = 3;
+}
+
+// Period score data point
+message PeriodScore {
+  // Category ID
+  // @inject_tag: db:"id"
+  string id = 1;
+  // Category name
+  // @inject_tag: db:"name"
+  string category = 2;
+  // Format for day type DAY is "YYYY-MM-DD"
+  // and for week type "week WW" (week number of year)
+  // @inject_tag: db:"period"
+  string period = 4;
+  // Score for the category in the given period
+  // @inject_tag: db:"score"
+  int32 score = 5;
+}
+
+message TicketScoresOut {
+  // List of ticket score data points
+  repeated TicketScore scores = 1;
+  // Categories
+  repeated string categories = 2;
+}
+
+message TicketScore {
+  // Ticker ID
+  // @inject_tag: db:"ticket_id"
+  int32 id = 1;
+  // Category name
+  // @inject_tag: db:"name"
+  string category = 2;
+  // Ticket score
+  // @inject_tag: db:"score"
+  int32 score = 3;
+}
+
+message OveralScoreOut {
+  // Overal score for the requested time period
+  // @inject_tag: db:"score"
+  int32 score = 1;
+}
+
+message PeriodOverPeriodOut {
+  // Period change percentages by category
+  repeated CategoryDiff changes = 1;
+}
+
+message CategoryDiff {
+  // Category ID
+  // @inject_tag: db:"id"
+  int32 id = 1;
+  // Category name
+  // @inject_tag: db:"name"
+  string category = 2;
+  // Change percentage
+  // @inject_tag: db:"diff"
+  int32 diff = 3;
+}

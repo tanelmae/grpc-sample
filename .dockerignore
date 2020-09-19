@@ -1,0 +1,9 @@
+/vendor
+/deploy
+/bin
+/pb/service.pb.go
+/doc/index.html
+database.db
+Dockerfile
+.gitignore
+*.md

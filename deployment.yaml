@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: grpc-sample
+spec:
+  selector:
+    app: grpc-sample
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  grpc-sample
+  labels:
+    app: grpc-sample
+spec:
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: grpc-sample
+    spec:
+      containers:
+      - name:  grpc-sample
+        image:  tanelmae/grpc-sample
+        env:
+          - name: DB-NAME
+            valueFrom:
+              secretKeyRef:
+                name: grpc-sample-db
+                key: password
+        args:
+          - "-db-host=my-cool.postgresql.com"
+          - "-db-name=grpc-sample"
+          - "-db-user=grpc-sample"
+          - "-docs-path=/static"
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "200M"
+        livenessProbe:
+          exec:
+            command:
+              - "/grpc-health"
+              - "-addr=:8080"
+          initialDelaySeconds: 10
+          timeoutSeconds: 10
+        ports:
+        - containerPort:  8080
+          name:  grpc
+      restartPolicy: Always
+      imagePullPolicy: Always
