@@ -1,5 +1,5 @@
 # GRPC sample service
-
+![alt text](grpc-all-the-services.jpg "Who hovers these days?")
 ## Server
 
 This is ticket review score calculator that masquerades as GRPC sample service :)
@@ -43,11 +43,10 @@ Supported service flags:
 ```
 All the flags can also be passed in as environment variables.
 
-If `-db-user`, `-db-password` and `db-name` it will try to connect to PostgreSQL. Otherwise it will attempt to open SQLite database file.
+If `-db-user`, `-db-password` and `db-name` it will try to connect to PostgreSQL. Otherwise it will attempt to open SQLite database file. By default it uses the SQLite database found in the repository.
+There is also `migrate-to-psql.sh` to migrate data to a local PostgreSQL database.
 
-By default it uses the SQLite database found in the repository.
-
-Health works with [grpc-health-probe](https://github.com/grpc-ecosystem/grpc-health-probe):
+Health check works with [grpc-health-probe](https://github.com/grpc-ecosystem/grpc-health-probe):
 ```bash
 ./grpc_health_probe -addr=:8080
 ```
@@ -57,7 +56,7 @@ In addition to GRPC methods the following HTTP methods are served:
 - `/docs` Proto service documentation page
 - `/proto` Service proto file
 
-Also available in Docker Hub:
+Also available in [Docker Hub](https://hub.docker.com/r/tanelmae/grpc-sample):
 ```bash
 docker pull tanelmae/grpc-sample
 ```
